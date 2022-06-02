@@ -20,6 +20,7 @@ func main() {
 }
 
 func processAllHouses(amountOfPages int) {
+	log.Printf("Processing houses from pages 1 to %d", amountOfPages)
 	var pagesWG sync.WaitGroup
 	for i := 1; i <= amountOfPages; i++ {
 		pagesWG.Add(1)
@@ -29,22 +30,23 @@ func processAllHouses(amountOfPages int) {
 	log.Printf("All available houses processed")
 }
 
-func processHousesByPage(page int, housesWG *sync.WaitGroup) {
-	log.Printf("Processing houses on page %d..", page)
+func processHousesByPage(page int, pagesWG *sync.WaitGroup) {
+	//log.Printf("Processing houses on page %d..", page)
 	houses, err := api.FetchHouses(page)
 	if err != nil {
 		log.Printf("Unable to load page %d", page) //TODO CHEKEAR
 		return
 	} else {
-		log.Printf("Houses from page %d fetched successfully", page)
+		//log.Printf("Houses from page %d fetched successfully", page)
 		var housesWG sync.WaitGroup
 		for _, house := range houses { //ENCAPSULAR EN -CONCURRENTPROCESSHOUSES()
 			housesWG.Add(1)
 			go processHouse(house, &housesWG)
 		}
-		log.Printf("Houses from page %d processed successfully", page)
+		log.Printf("Page %d: Done", page)
 		housesWG.Wait()
 	}
+	pagesWG.Done()
 }
 
 func processHouse(house models.House, housesWG *sync.WaitGroup) {

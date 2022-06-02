@@ -2,27 +2,23 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"home_vision/httpRetry"
 	"home_vision/models"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 const (
 	homevisionDomain = "http://app-homevision-staging.herokuapp.com"
 	housesEndpoint = "/api_project/houses"
-	requestMaxAttempts = 2
-	attemptIntervalMilliseconds = 200
 )
 
 func FetchHouses(page int) ([]models.House, error) {
 	fullUrl := homevisionDomain + housesEndpoint + "?page=" + strconv.Itoa(page)
-	resp, err := tryGet(fullUrl, requestMaxAttempts, attemptIntervalMilliseconds)
+	resp, err := httpRetry.Get(fullUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +39,7 @@ func FetchHouses(page int) ([]models.House, error) {
 }
 
 func FetchHouseImage(house models.House)  ([]byte, error) {
-	resp, err := http.Get(house.PhotoURL)	
+	resp, err := httpRetry.Get(house.PhotoURL)	
 	if err != nil {
 		return nil, err
 	}
@@ -58,23 +54,4 @@ func FetchHouseImage(house models.House)  ([]byte, error) {
 		return nil, err
 	}
 	return bodyBytes, nil
-}
-
-/// Tries multiple times an http.Get request.
-/// Returns error after all posible atempts failed
-func tryGet(url string, maxAttempts int, intervalMilliseconds int) (resp *http.Response, err error) {
-	attempts := 0
-	for {
-		resp, err := http.Get(url)
-		if err == nil && resp.StatusCode == http.StatusOK {
-			return resp, nil
-		}
-
-		attempts++
-		log.Printf("%s [%d/%d attempts] on %s", resp.Status, attempts, maxAttempts, url)
-		if attempts == maxAttempts {
-			return nil, errors.New("maximum amount of attempts reached")
-		}
-		time.Sleep(time.Duration(intervalMilliseconds) * time.Millisecond)
-	}
 }

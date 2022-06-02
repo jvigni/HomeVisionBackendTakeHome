@@ -12,7 +12,7 @@ import (
 
 const (
 	amountOfPagesToProcess = 10
-	housesImageRepositoryPath = "houses_images/"
+	housesImageRepositoryPath = "housesImages/"
 	imagesExtension = "jpg"
 )
 

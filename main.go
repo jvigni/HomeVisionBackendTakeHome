@@ -10,59 +10,70 @@ import (
 )
 
 const (
-	pagesAmountToProcess = 10
-	housePhotoRepositoryPath = "houses_photos/"
-	photosExtension = "jpg"
+	amountOfPagesToProcess = 10
+	housesImageRepositoryPath = "houses_images/"
+	imagesExtension = "jpg"
 )
 
+var downloadedImagesCount int
+var successfullyProcessedHousesCount int
+
+
 func main() {
-	processAllHouses(pagesAmountToProcess)
+	processPages(amountOfPagesToProcess)
 }
 
-func processAllHouses(amountOfPages int) {
+func processPages(amountOfPages int) {
 	log.Printf("Processing houses from pages 1 to %d", amountOfPages)
-	var pagesWG sync.WaitGroup
+	var processPagesWG sync.WaitGroup
 	for i := 1; i <= amountOfPages; i++ {
-		pagesWG.Add(1)
-		go processHousesByPage(i, &pagesWG)
+		processPagesWG.Add(1)
+		go processHousesByPage(i, &processPagesWG)
 	}
-	pagesWG.Wait()
-	log.Printf("All available houses processed")
+	processPagesWG.Wait()
+	log.Printf("All available houses processed. Images downloaded: %d", downloadedImagesCount)
 }
 
-func processHousesByPage(page int, pagesWG *sync.WaitGroup) {
+func processHousesByPage(page int, wg *sync.WaitGroup) {
+	defer wg.Done()
 	//log.Printf("Processing houses on page %d..", page)
 	houses, err := api.FetchHouses(page)
 	if err != nil {
-		log.Printf("Unable to load page %d", page) //TODO CHEKEAR
+		log.Printf("Unable to load page %d... %v", page, err)
 		return
 	} else {
 		//log.Printf("Houses from page %d fetched successfully", page)
-		var housesWG sync.WaitGroup
+		var processHousesWG sync.WaitGroup
 		for _, house := range houses { //ENCAPSULAR EN -CONCURRENTPROCESSHOUSES()
-			housesWG.Add(1)
-			go processHouse(house, &housesWG)
+			processHousesWG.Add(1)
+			go processHouse(house, &processHousesWG)
 		}
-		log.Printf("Page %d: Done", page)
-		housesWG.Wait()
+		log.Printf("Page %d Done", page)
+		processHousesWG.Wait()
 	}
-	pagesWG.Done()
 }
 
-func processHouse(house models.House, housesWG *sync.WaitGroup) {
-	defer housesWG.Done()
-	downloadHousePhoto(house)
-}
-
-func downloadHousePhoto(house models.House) {
-	fileName := fmt.Sprintf("%d-%s.%s", house.Id, house.Address, photosExtension)
-	respBytes, err := api.FetchHouseImage(house)
+func processHouse(house models.House, wg *sync.WaitGroup) {
+	defer wg.Done()
+	err := downloadHouseImage(house)
 	if err != nil {
-		log.Printf("Cant fetch photo on houseId: %d [%s]", house.Id, err)
+		log.Printf("failed to process house %d... %v", house.Id, err)
 	}
-	if err := createNewFile(respBytes, fileName, housePhotoRepositoryPath); err != nil {
-		log.Printf("Cant create photo file for houseId: %d [%s]", house.Id, err)	
+	successfullyProcessedHousesCount++
+}
+
+func downloadHouseImage(house models.House) error {
+	fileName := fmt.Sprintf("%d-%s.%s", house.Id, house.Address, imagesExtension)
+	respBytes, err := api.FetchHouseImage(house);
+	if err != nil {
+		return fmt.Errorf("can't fetch image on houseID: %d... %w", house.Id, err)
 	}
+	if err := createNewFile(respBytes, fileName, housesImageRepositoryPath); err != nil {
+		return fmt.Errorf("can't create image file on houseID: %d... %w", house.Id, err)
+	}
+
+	downloadedImagesCount++
+	return nil
 }
 
 func createNewFile(data []byte, fileName string, filePath string) error {

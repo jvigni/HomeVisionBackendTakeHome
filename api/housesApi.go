@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"home_vision/models"
 	"io"
 	"io/ioutil"
@@ -16,7 +17,7 @@ const (
 	homevisionDomain = "http://app-homevision-staging.herokuapp.com"
 	housesEndpoint = "/api_project/houses"
 	housesPerPage = 10
-	requestMaxAttempts = 5
+	requestMaxAttempts = 2
 	attemptIntervalMilliseconds = 200
 )
 
@@ -50,7 +51,7 @@ func FetchHouseImage(house models.House)  ([]byte, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(resp.Status)
+		return nil, fmt.Errorf("http error code %v fetching houseID %v", resp.Status, house.Id)
 	}
 	
 	bodyBytes, err := io.ReadAll(resp.Body)
@@ -71,7 +72,7 @@ func tryGet(url string, maxAttempts int, intervalMilliseconds int) (resp *http.R
 		}
 
 		attempts++
-		log.Printf("%s (%d/%d attempts) on %s", resp.Status, attempts, maxAttempts, url)
+		log.Printf("%s [%d/%d attempts] on %s", resp.Status, attempts, maxAttempts, url)
 		if attempts == maxAttempts {
 			return nil, errors.New("maximum amount of attempts reached")
 		}

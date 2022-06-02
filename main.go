@@ -36,7 +36,7 @@ func processPages(amountOfPages int) {
 
 func processHousesByPage(page int, wg *sync.WaitGroup) {
 	defer wg.Done()
-	houses, err := api.FetchHouses(page)
+	houses, err := api.FetchHousesByPage(page)
 	if err != nil {
 		log.Printf("Unable to fetch page %d... %v", page, err)
 		return
@@ -46,8 +46,8 @@ func processHousesByPage(page int, wg *sync.WaitGroup) {
 			processHousesWG.Add(1)
 			go processHouse(house, &processHousesWG)
 		}
-		log.Printf("Page %d Done", page)
 		processHousesWG.Wait()
+		log.Printf("Page %d Done", page)
 	}
 }
 

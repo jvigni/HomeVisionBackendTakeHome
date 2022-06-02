@@ -16,7 +16,7 @@ const (
 	housesEndpoint = "/api_project/houses"
 )
 
-func FetchHouses(page int) ([]models.House, error) {
+func FetchHousesByPage(page int) ([]models.House, error) {
 	fullUrl := homevisionDomain + housesEndpoint + "?page=" + strconv.Itoa(page)
 	resp, err := httpRetry.Get(fullUrl)
 	if err != nil {
@@ -24,13 +24,13 @@ func FetchHouses(page int) ([]models.House, error) {
 	}
 	defer resp.Body.Close()
 	
-	var housesResponse models.HousesResponse
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 	
 	// Parse json response
+	var housesResponse models.HousesResponse
 	if err := json.Unmarshal(body, &housesResponse); err != nil {
 		return nil, err
 	}

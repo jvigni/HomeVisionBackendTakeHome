@@ -38,7 +38,7 @@ func processHousesByPage(page int, wg *sync.WaitGroup) {
 	defer wg.Done()
 	houses, err := api.FetchHouses(page)
 	if err != nil {
-		log.Printf("Unable to load page %d... %v", page, err)
+		log.Printf("Unable to fetch page %d... %v", page, err)
 		return
 	} else {
 		var processHousesWG sync.WaitGroup
@@ -55,19 +55,20 @@ func processHouse(house models.House, wg *sync.WaitGroup) {
 	defer wg.Done()
 	err := downloadHouseImage(house)
 	if err != nil {
-		log.Printf("failed to process house %d... %v", house.Id, err)
+		log.Printf("Failed to process house %d... %v", house.Id, err)
+	} else {
+		atomic.AddInt64(&successfullyProcessedHousesCounter, 1)
 	}
-	atomic.AddInt64(&successfullyProcessedHousesCounter, 1)
 }
 
 func downloadHouseImage(house models.House) error {
 	fileName := fmt.Sprintf("%d-%s.%s", house.Id, house.Address, imagesExtension)
 	respBytes, err := api.FetchHouseImage(house);
 	if err != nil {
-		return fmt.Errorf("can't fetch image on houseID: %d... %w", house.Id, err)
+		return fmt.Errorf("can't fetch image... %w", err)
 	}
 	if err := createNewFile(respBytes, fileName, housesImageRepositoryPath); err != nil {
-		return fmt.Errorf("can't create image file on houseID: %d... %w", house.Id, err)
+		return fmt.Errorf("can't create image file... %w", err)
 	}
 	atomic.AddInt64(&downloadedImagesCounter, 1)
 	return nil

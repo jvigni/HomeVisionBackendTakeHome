@@ -16,13 +16,12 @@ import (
 const (
 	homevisionDomain = "http://app-homevision-staging.herokuapp.com"
 	housesEndpoint = "/api_project/houses"
-	housesPerPage = 10
 	requestMaxAttempts = 2
 	attemptIntervalMilliseconds = 200
 )
 
 func FetchHouses(page int) ([]models.House, error) {
-	fullUrl := homevisionDomain + housesEndpoint + "?page=" + strconv.Itoa(page) + "&per_page=" + strconv.Itoa(housesPerPage)
+	fullUrl := homevisionDomain + housesEndpoint + "?page=" + strconv.Itoa(page)
 	resp, err := tryGet(fullUrl, requestMaxAttempts, attemptIntervalMilliseconds)
 	if err != nil {
 		return nil, err

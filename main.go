@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"sync/atomic"
 )
 
 const (
@@ -15,9 +16,8 @@ const (
 	imagesExtension = "jpg"
 )
 
-var downloadedImagesCount int
-var successfullyProcessedHousesCount int
-
+var downloadedImagesCounter int64
+var successfullyProcessedHousesCounter int64
 
 func main() {
 	processPages(amountOfPagesToProcess)
@@ -31,20 +31,18 @@ func processPages(amountOfPages int) {
 		go processHousesByPage(i, &processPagesWG)
 	}
 	processPagesWG.Wait()
-	log.Printf("All available houses processed. Images downloaded: %d", downloadedImagesCount)
+	log.Printf("All available houses processed. Images downloaded: %d", downloadedImagesCounter)
 }
 
 func processHousesByPage(page int, wg *sync.WaitGroup) {
 	defer wg.Done()
-	//log.Printf("Processing houses on page %d..", page)
 	houses, err := api.FetchHouses(page)
 	if err != nil {
 		log.Printf("Unable to load page %d... %v", page, err)
 		return
 	} else {
-		//log.Printf("Houses from page %d fetched successfully", page)
 		var processHousesWG sync.WaitGroup
-		for _, house := range houses { //ENCAPSULAR EN -CONCURRENTPROCESSHOUSES()
+		for _, house := range houses {
 			processHousesWG.Add(1)
 			go processHouse(house, &processHousesWG)
 		}
@@ -59,7 +57,7 @@ func processHouse(house models.House, wg *sync.WaitGroup) {
 	if err != nil {
 		log.Printf("failed to process house %d... %v", house.Id, err)
 	}
-	successfullyProcessedHousesCount++
+	atomic.AddInt64(&successfullyProcessedHousesCounter, 1)
 }
 
 func downloadHouseImage(house models.House) error {
@@ -71,8 +69,7 @@ func downloadHouseImage(house models.House) error {
 	if err := createNewFile(respBytes, fileName, housesImageRepositoryPath); err != nil {
 		return fmt.Errorf("can't create image file on houseID: %d... %w", house.Id, err)
 	}
-
-	downloadedImagesCount++
+	atomic.AddInt64(&downloadedImagesCounter, 1)
 	return nil
 }
 

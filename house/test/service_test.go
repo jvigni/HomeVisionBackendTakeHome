@@ -15,15 +15,18 @@ var houseService = house.HouseService{
 }
 
 func TestFetchHousesByPage(t *testing.T) {
+	// Given
 	responseBody, err := utils.LoadJson("getHousesResponseTest.json")
 	if err != nil {
 		t.Error(err)
 	}
-
 	url := "testDomain/api_project/houses?page=1"
 	httpMockClient.Simulate(url, 200, responseBody)
 
+	// When
 	houses, err := houseService.FetchHousesByPage(1)
+	
+	// Then
 	if err != nil {
 		t.Error(err)
 	}
@@ -33,12 +36,16 @@ func TestFetchHousesByPage(t *testing.T) {
 }
 
 func TestFetchHouseImage(t *testing.T) {
+	// Given
 	imgUrl := "https://asd/asd.jpg"
 	imgBytes := []byte{1,2,3}
 	house := house.House{ PhotoURL: imgUrl }
 	httpMockClient.Simulate(imgUrl, 200, string(imgBytes))
 
+	// When
 	resp, err := houseService.FetchHouseImage(house)
+	
+	// Then
 	if err != nil {
 		t.Error(err)
 	}

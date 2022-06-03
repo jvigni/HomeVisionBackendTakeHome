@@ -19,11 +19,9 @@ const (
 var downloadedImagesCounter int64
 var successfullyProcessedHousesCounter int64
 
-var retryClient = httpClients.HttpRetryClient{
-	MaxAttempts: 5,
-}
+var httpRetryClient = httpClients.HttpRetryClient{ MaxAttempts: 5 }
 var houseService = house.HouseService{ 
-	HttpClient: retryClient,
+	HttpClient: httpRetryClient,
 	Domain: "http://app-homevision-staging.herokuapp.com",
 }
 

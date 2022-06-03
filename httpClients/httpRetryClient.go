@@ -7,15 +7,20 @@ import (
 	"time"
 )
 
+const (
+	baseRetryIntervalMilliseconds = 200
+	backoffRetryIntervalMultiplier = 2
+)
+
 type HttpRetryClient struct {
 	MaxAttempts int
-	AttemptIntervalMilliseconds int
 }
 
 /// Tries multiple times an http.Get request.
 /// Returns error after all posible atempts failed
 func (c HttpRetryClient) Get(url string) (*http.Response, error){
 	attempts := 0
+	sleepTimeMilliseconds := baseRetryIntervalMilliseconds
 	for {
 		resp, err := http.Get(url)
 		if err == nil && resp.StatusCode == http.StatusOK {
@@ -27,6 +32,7 @@ func (c HttpRetryClient) Get(url string) (*http.Response, error){
 		if attempts == c.MaxAttempts {
 			return nil, errors.New("maximum amount of attempts reached")
 		}
-		time.Sleep(time.Duration(c.AttemptIntervalMilliseconds) * time.Millisecond)
+		time.Sleep(time.Duration(sleepTimeMilliseconds) * time.Millisecond)
+		sleepTimeMilliseconds *= backoffRetryIntervalMultiplier
 	}
 }

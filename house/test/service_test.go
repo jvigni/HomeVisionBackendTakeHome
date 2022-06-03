@@ -37,6 +37,7 @@ func TestFetchHouseImage(t *testing.T) {
 	imgBytes := []byte{1,2,3}
 	house := house.House{ PhotoURL: imgUrl }
 	httpMockClient.Simulate(imgUrl, 200, string(imgBytes))
+
 	resp, err := houseService.FetchHouseImage(house)
 	if err != nil {
 		t.Error(err)

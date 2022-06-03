@@ -20,8 +20,7 @@ var downloadedImagesCounter int64
 var successfullyProcessedHousesCounter int64
 
 var retryClient = httpClients.HttpRetryClient{
-	MaxAttempts: 1,
-	AttemptIntervalMilliseconds: 200,
+	MaxAttempts: 5,
 }
 var houseService = house.HouseService{ 
 	HttpClient: retryClient,

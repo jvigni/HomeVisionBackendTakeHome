@@ -6,12 +6,11 @@
 Take home interview for HomeVision.
 Focusing on writing a clean coded go program that consumes and download images from an API that can fail randomly and is slow.
 
-Full description at:
-https://www.notion.so/HomeVision-Backend-Take-Home-94ec9ce5da0341fb9d3dc547a5bc2e15
+Check the full description [here](https://www.notion.so/HomeVision-Backend-Take-Home-94ec9ce5da0341fb9d3dc547a5bc2e15)
 
 
-## How to build & run:
-Must have go installed and stand on project root
+## How to run & build:
+Must have [go](https://go.dev/doc/install) installed and stand on project root
 
 ```
 go run main.go        // Directly runs the application

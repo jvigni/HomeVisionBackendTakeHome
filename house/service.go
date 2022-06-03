@@ -1,10 +1,9 @@
-package api
+package house
 
 import (
 	"encoding/json"
 	"fmt"
-	"home_vision/httpRetry"
-	"home_vision/models"
+	"home_vision/httpClients"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -12,13 +11,17 @@ import (
 )
 
 const (
-	homevisionDomain = "http://app-homevision-staging.herokuapp.com"
 	housesEndpoint = "/api_project/houses"
 )
 
-func FetchHousesByPage(page int) ([]models.House, error) {
-	fullUrl := homevisionDomain + housesEndpoint + "?page=" + strconv.Itoa(page)
-	resp, err := httpRetry.Get(fullUrl)
+type HouseService struct {
+	HttpClient httpClients.HttpClient
+	Domain string
+}
+
+func (h *HouseService) FetchHousesByPage(page int) ([]House, error) {
+	fullUrl := h.Domain + housesEndpoint + "?page=" + strconv.Itoa(page)
+	resp, err := h.HttpClient.Get(fullUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +33,7 @@ func FetchHousesByPage(page int) ([]models.House, error) {
 	}
 	
 	// Parse json response
-	var housesResponse models.HousesResponse
+	var housesResponse HousesResponse
 	if err := json.Unmarshal(body, &housesResponse); err != nil {
 		return nil, err
 	}
@@ -38,8 +41,8 @@ func FetchHousesByPage(page int) ([]models.House, error) {
 	return housesResponse.Houses, nil
 }
 
-func FetchHouseImage(house models.House)  ([]byte, error) {
-	resp, err := httpRetry.Get(house.PhotoURL)	
+func (h *HouseService) FetchHouseImage(house House)  ([]byte, error) {
+	resp, err := h.HttpClient.Get(house.PhotoURL)	
 	if err != nil {
 		return nil, err
 	}

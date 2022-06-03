@@ -1,4 +1,4 @@
-package models
+package house
 
 type Houses []House
 

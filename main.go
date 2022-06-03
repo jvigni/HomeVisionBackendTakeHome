@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"home_vision/api"
-	"home_vision/models"
+	"home_vision/house"
+	"home_vision/httpClients"
 	"log"
 	"os"
 	"sync"
@@ -18,6 +18,15 @@ const (
 
 var downloadedImagesCounter int64
 var successfullyProcessedHousesCounter int64
+
+var retryClient = httpClients.HttpRetryClient{
+	MaxAttempts: 1,
+	AttemptIntervalMilliseconds: 200,
+}
+var houseService = house.HouseService{ 
+	HttpClient: retryClient,
+	Domain: "http://app-homevision-staging.herokuapp.com",
+}
 
 func main() {
 	processPages(amountOfPagesToProcess)
@@ -36,7 +45,7 @@ func processPages(amountOfPages int) {
 
 func processHousesByPage(page int, wg *sync.WaitGroup) {
 	defer wg.Done()
-	houses, err := api.FetchHousesByPage(page)
+	houses, err := houseService.FetchHousesByPage(page)
 	if err != nil {
 		log.Printf("Unable to fetch page %d... %v", page, err)
 		return
@@ -51,7 +60,7 @@ func processHousesByPage(page int, wg *sync.WaitGroup) {
 	}
 }
 
-func processHouse(house models.House, wg *sync.WaitGroup) {
+func processHouse(house house.House, wg *sync.WaitGroup) {
 	defer wg.Done()
 	err := downloadHouseImage(house)
 	if err != nil {
@@ -61,9 +70,9 @@ func processHouse(house models.House, wg *sync.WaitGroup) {
 	}
 }
 
-func downloadHouseImage(house models.House) error {
+func downloadHouseImage(house house.House) error {
 	fileName := fmt.Sprintf("%d-%s.%s", house.Id, house.Address, imagesExtension)
-	respBytes, err := api.FetchHouseImage(house);
+	respBytes, err := houseService.FetchHouseImage(house);
 	if err != nil {
 		return fmt.Errorf("can't fetch image... %w", err)
 	}

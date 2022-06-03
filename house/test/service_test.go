@@ -37,7 +37,7 @@ func TestFetchHousesByPage(t *testing.T) {
 
 func TestFetchHouseImage(t *testing.T) {
 	// Given
-	imgUrl := "https://asd/asd.jpg"
+	imgUrl := "https://test/test.jpg"
 	imgBytes := []byte{1,2,3}
 	house := house.House{ PhotoURL: imgUrl }
 	httpMockClient.Simulate(imgUrl, 200, string(imgBytes))

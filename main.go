@@ -45,15 +45,15 @@ func processHousesByPage(page int, wg *sync.WaitGroup, houseService house.HouseS
 	if err != nil {
 		log.Printf("Unable to fetch page %d... %v", page, err)
 		return
-	} else {
-		var processHousesWG sync.WaitGroup
-		for _, house := range houses {
-			processHousesWG.Add(1)
-			go processHouse(house, &processHousesWG, houseService)
-		}
-		processHousesWG.Wait()
-		log.Printf("Page %d Done", page)
+	} 
+	var processHousesWG sync.WaitGroup
+	for _, house := range houses {
+		processHousesWG.Add(1)
+		go processHouse(house, &processHousesWG, houseService)
 	}
+	processHousesWG.Wait()
+	log.Printf("Page %d Done", page)
+	
 }
 
 func processHouse(house house.House, wg *sync.WaitGroup, houseService house.HouseService) {

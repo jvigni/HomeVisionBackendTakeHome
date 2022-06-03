@@ -37,9 +37,9 @@ I needed a simple way to mock the http requests to test the houseService.
 I tried many ways of doing It like implementing interfaces, httptest package to generate a custom mock Server, and some external libraries. But ended up creating a simple mocking system similar to testify library.
 ```.Simulate(url, statusCode, bodyResponse)``` method from httpMockClient will only return the mock request when doing ```.Get(url)``` if you match the exact url
 
-### DependencyInjection
+### Dependency Injection
 To be able to use my httpMockClient, the houseService needs to be injected with an httpClient.
 So I can use httpMockClient on tests, and the httpRetryClient on the running app.
 
 ### Log
-Huge emphasis on a clean log with wrapped errors for a clear stacktrace
+Huge emphasis on a clean log with wrapped errors for a clean stacktrace

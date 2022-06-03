@@ -35,7 +35,7 @@ Each request attempt will wait double the time of the last request
 ### HttpMockClient:
 I needed a simple way to mock the http requests to test the houseService.
 I tried many ways of doing It like implementing interfaces, httptest package to generate a custom mock Server, and some external libraries. But ended up creating a simple mocking system similar to testify library.
-```.Simulate(url, statusCode, bodyResponse)``` method from httpMockClient will only return the mock request if you match the exact url
+```.Simulate(url, statusCode, bodyResponse)``` method from httpMockClient will only return the mock request when doing ```.Get(url)``` if you match the exact url
 
 ### DependencyInjection
 To be able to use my httpMockClient, the houseService needs to be injected with an httpClient.

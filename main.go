@@ -29,21 +29,21 @@ var houseService = house.HouseService{
 }
 
 func main() {
-	processPages(amountOfPagesToProcess)
+	processPages(amountOfPagesToProcess, houseService)
 }
 
-func processPages(amountOfPages int) {
+func processPages(amountOfPages int, houseService house.HouseService) {
 	log.Printf("Processing houses from pages 1 to %d", amountOfPages)
 	var processPagesWG sync.WaitGroup
 	for i := 1; i <= amountOfPages; i++ {
 		processPagesWG.Add(1)
-		go processHousesByPage(i, &processPagesWG)
+		go processHousesByPage(i, &processPagesWG, houseService)
 	}
 	processPagesWG.Wait()
 	log.Printf("All available houses processed. Images downloaded: %d", downloadedImagesCounter)
 }
 
-func processHousesByPage(page int, wg *sync.WaitGroup) {
+func processHousesByPage(page int, wg *sync.WaitGroup, houseService house.HouseService) {
 	defer wg.Done()
 	houses, err := houseService.FetchHousesByPage(page)
 	if err != nil {
@@ -53,16 +53,16 @@ func processHousesByPage(page int, wg *sync.WaitGroup) {
 		var processHousesWG sync.WaitGroup
 		for _, house := range houses {
 			processHousesWG.Add(1)
-			go processHouse(house, &processHousesWG)
+			go processHouse(house, &processHousesWG, houseService)
 		}
 		processHousesWG.Wait()
 		log.Printf("Page %d Done", page)
 	}
 }
 
-func processHouse(house house.House, wg *sync.WaitGroup) {
+func processHouse(house house.House, wg *sync.WaitGroup, houseService house.HouseService) {
 	defer wg.Done()
-	err := downloadHouseImage(house)
+	err := downloadHouseImage(house, houseService)
 	if err != nil {
 		log.Printf("Failed to process house %d... %v", house.Id, err)
 	} else {
@@ -70,7 +70,7 @@ func processHouse(house house.House, wg *sync.WaitGroup) {
 	}
 }
 
-func downloadHouseImage(house house.House) error {
+func downloadHouseImage(house house.House, houseService house.HouseService) error {
 	fileName := fmt.Sprintf("%d-%s.%s", house.Id, house.Address, imagesExtension)
 	respBytes, err := houseService.FetchHouseImage(house);
 	if err != nil {

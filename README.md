@@ -11,9 +11,12 @@ https://www.notion.so/HomeVision-Backend-Take-Home-94ec9ce5da0341fb9d3dc547a5bc2
 
 
 ## How to build & run:
+Must have go installed and stand on project root
+
 ```
+go run main.go        // Directly runs the application
+or:
 go build .            // Generates the executable for your OS
-go run main.go        // Runs the generated executable
 ```
 Images are downloaded on "housesImages" folder
 

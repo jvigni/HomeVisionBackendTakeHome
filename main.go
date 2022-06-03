@@ -17,7 +17,6 @@ const (
 )
 
 var downloadedImagesCounter int64
-var successfullyProcessedHousesCounter int64
 
 var httpRetryClient = httpClients.HttpRetryClient{ MaxAttempts: 5 }
 var houseService = house.HouseService{ 
@@ -62,8 +61,6 @@ func processHouse(house house.House, wg *sync.WaitGroup, houseService house.Hous
 	err := downloadHouseImage(house, houseService)
 	if err != nil {
 		log.Printf("Failed to process house %d... %v", house.Id, err)
-	} else {
-		atomic.AddInt64(&successfullyProcessedHousesCounter, 1)
 	}
 }
 

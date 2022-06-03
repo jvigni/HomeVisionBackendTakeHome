@@ -17,7 +17,8 @@ type HttpRetryClient struct {
 }
 
 /// Tries multiple times an http.Get request.
-/// Returns error after all posible atempts failed
+/// Returns error after all posible atempts failed.
+/// Uses a simple exponential backoff.
 func (c HttpRetryClient) Get(url string) (*http.Response, error){
 	attempts := 0
 	sleepTimeMilliseconds := baseRetryIntervalMilliseconds
